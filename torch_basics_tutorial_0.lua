@@ -1,6 +1,7 @@
 require 'nn';
 require 'image';
 require 'itorch';
+require 'cunn';
 
 local basicsTutorialTest = {}
 local tester = torch.Tester()
@@ -48,7 +49,7 @@ function basicsTutorialTest.buildLenet()
 end
 
 
-function basicsTutorialTest.trainCifar10()
+function trainCifar10()
     os.execute('wget -c https://s3.amazonaws.com/torch7/data/cifar10torchsmall.zip')
     os.execute('unzip -n cifar10torchsmall.zip')
     local trainset = torch.load('cifar10-train.t7')
@@ -67,7 +68,7 @@ function basicsTutorialTest.trainCifar10()
 
     trainset.data = trainset.data:double()
 
-    print(testset.data:size(1))
+    print(trainset:size(1))
 
 
 --    image.display(trainset[33][1])
@@ -101,7 +102,7 @@ function basicsTutorialTest.trainCifar10()
 
     local trainer = nn.StochasticGradient(net, criterion)
     trainer.learningRate = 0.001
-    trainer.maxIteration = 0
+    trainer.maxIteration = 5
     trainer:train(trainset)
 
     testset.data = testset.data:double()
@@ -116,17 +117,47 @@ function basicsTutorialTest.trainCifar10()
         print(classes[i], predicted[i])
     end
 
-    local correct = 0
+    local class_performance = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     for i=1,testset.data:size(1) do
-        local grountruth = testset.label[1]
+        local groundtruth = testset.label[i]
         local prediction = net:forward(testset.data[i])
-        
+        local confidences, indices = torch.sort(prediction, true)  -- true means sort in descending order
+        if groundtruth == indices[1] then
+            class_performance[groundtruth] = class_performance[groundtruth] + 1
+        end
     end
 
+    for i=1,#classes do
+        print(classes[i], 100*class_performance[i]/1000 .. ' %')
+    end
+
+    print('now train on GPU..')
+    net = net:cuda()
+    criterion = criterion:cuda()
+    trainset.data = trainset.data:cuda()
+    testset.data = testset.data:cuda()
+    trainer = nn.StochasticGradient(net, criterion)
+    trainer.learningRate = 0.001
+    trainer.maxIteration = 5
+    trainer:train(trainset)
+
+    local class_performance = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+    for i=1,testset.data:size(1) do
+        local groundtruth = testset.label[i]
+        local prediction = net:forward(testset.data[i])
+        local confidences, indices = torch.sort(prediction, true)  -- true means sort in descending order
+        if groundtruth == indices[1] then
+            class_performance[groundtruth] = class_performance[groundtruth] + 1
+        end
+    end
+
+    for i=1,#classes do
+        print(classes[i], 100*class_performance[i]/1000 .. ' %')
+    end
 end
 
 
-basicsTutorialTest.trainCifar10()
+trainCifar10()
 --
 --tester:add(basicsTutorialTest)
 --tester:run()
