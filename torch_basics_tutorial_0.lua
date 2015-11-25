@@ -45,7 +45,7 @@ function basicsTutorialTest.buildLenet()
     net:add(nn.Linear(120, 84))
     net:add(nn.Linear(84, 10))
     net:add(nn.LogSoftMax())
-    tester:asserteq(net:size(), 9)
+    tester:asserteq(net:size(), 8)
 end
 
 
@@ -93,6 +93,7 @@ function trainCifar10()
     net:add(nn.SpatialConvolution(6, 16, 5, 5))
     net:add(nn.SpatialMaxPooling(2,2,2,2))
     net:add(nn.View(16*5*5))                    -- reshapes from a 3D tensor of 16x5x5 into 1D tensor of 16*5*5
+    -- Again, it seems that activation functions are missing
     net:add(nn.Linear(16*5*5, 120))             -- fully connected layer (matrix multiplication between input and weights)
     net:add(nn.Linear(120, 84))
     net:add(nn.Linear(84, 10))                   -- 10 is the number of outputs of the network (in this case, 10 digits)
@@ -157,9 +158,8 @@ function trainCifar10()
 end
 
 
-trainCifar10()
---
---tester:add(basicsTutorialTest)
---tester:run()
+-- trainCifar10()
 
-
+tester:add(basicsTutorialTest)
+tester:run()
+if tester.errors[1] then os.exit(1) end
