@@ -50,4 +50,6 @@ script:
 - export TESTLUA=$(which luajit lua | head -n 1)
 - pwd
 - ls
+- which luajit lua | head -n 1
+- which th
 - ${TESTLUA} torch_basics_tutorial_0.lua
