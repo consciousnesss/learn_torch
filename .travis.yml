@@ -48,4 +48,6 @@ before_script:
 - export LD_LIBRARY_PATH=${INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH
 script:
 - export TESTLUA=$(which luajit lua | head -n 1)
+- pwd
+- ls
 - ${TESTLUA} torch_basics_tutorial_0.lua
