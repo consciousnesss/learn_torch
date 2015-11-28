@@ -43,5 +43,4 @@ luac.out
 .idea
 
 # datasets
-cifar10-test.t7
-cifar10-train.t7
+*.t7
