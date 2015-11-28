@@ -38,7 +38,7 @@ end
 
 function normalizeData(trainData, testData)
     local channels = {'y', 'u', 'v' }
-    for i,channel in ipairs(channels) do
+    for i in ipairs(channels) do
         local mean = trainData.data[{ {}, i, {}, {} }]:mean()
         local std = trainData.data[{ {}, i, {}, {} }]:std()
         trainData.data[{ {}, i, {}, {} }]:add(-mean)
@@ -46,6 +46,18 @@ function normalizeData(trainData, testData)
 
         testData.data[{ {}, i, {}, {} }]:add(-mean)
         testData.data[{ {}, i, {}, {} }]:div(std)
+    end
+
+    -- local normalization
+    local neirborhood = image.gaussian1D(13)
+    local normalization = nn.SpatialContrastiveNormalization(1, neirborhood, 1):float()
+
+    -- normalize only Y
+    for i = 1,trainData:size() do
+      trainData.data[{ i,{1},{},{} }] = normalization:forward(trainData.data[{ i,{1},{},{} }])
+    end
+    for i = 1,testData:size() do
+      testData.data[{ i,{1},{},{} }] = normalization:forward(testData.data[{ i,{1},{},{} }])
     end
 end
 
@@ -58,3 +70,27 @@ trainData = loadData(trainFile, trainSize)
 testData = loadData(testFile, testSize)
 
 normalizeData(trainData, testData)
+
+-- print out results
+local channels = {'y', 'u', 'v' }
+for i,channel in ipairs(channels) do
+   trainMean = trainData.data[{ {},i }]:mean()
+   trainStd = trainData.data[{ {},i }]:std()
+
+   testMean = testData.data[{ {},i }]:mean()
+   testStd = testData.data[{ {},i }]:std()
+
+   print('training data, '..channel..'-channel, mean: ' .. trainMean)
+   print('training data, '..channel..'-channel, standard deviation: ' .. trainStd)
+
+   print('test data, '..channel..'-channel, mean: ' .. testMean)
+   print('test data, '..channel..'-channel, standard deviation: ' .. testStd)
+end
+
+
+first256Samples_y = trainData.data[{ {1,256},1 }]
+first256Samples_u = trainData.data[{ {1,256},2 }]
+first256Samples_v = trainData.data[{ {1,256},3 }]
+image.display(first256Samples_y)
+image.display(first256Samples_u)
+image.display(first256Samples_v)
