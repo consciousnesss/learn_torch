@@ -23,7 +23,7 @@ end
 function loadData(filename, size)
     local loadedData = torch.load(filename, 'ascii')
     local dataDesc = {
-        data = loadedData.X:transpose(3, 4),
+        data = loadedData.X:transpose(3, 4)[{{1, size}, {}, {}, {}}],
         labels = loadedData.y[1],
         size = function() return size end
     }
@@ -63,13 +63,31 @@ end
 
 
 
-trainFile, testFile = downloadHousenumbersData()
-local trainSize = 10000
-local testSize = 2000
-trainData = loadData(trainFile, trainSize)
-testData = loadData(testFile, testSize)
+function prepareData()
+    local preparedTrainFile = 'prepared_train_32x32.t7'
+    local preparedTestFile = 'prepared_test_32x32.t7'
+    if paths.filep(preparedTrainFile) and paths.filep(preparedTestFile) then
+        print('Loading prepared dataset..')
+        local trainData = torch.load(preparedTrainFile)
+        local testData = torch.load(preparedTestFile)
+        return trainData, testData
+    else
+        local trainFile, testFile = downloadHousenumbersData()
+        local trainSize = 10000
+        local testSize = 2000
+        local trainData = loadData(trainFile, trainSize)
+        local testData = loadData(testFile, testSize)
 
-normalizeData(trainData, testData)
+        normalizeData(trainData, testData)
+
+        torch.save(preparedTrainFile, trainData)
+        torch.save(preparedTestFile, testData)
+        return trainData, testData
+    end
+end
+
+
+trainData, testData = prepareData()
 
 -- print out results
 local channels = {'y', 'u', 'v' }
