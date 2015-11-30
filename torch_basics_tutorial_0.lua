@@ -1,6 +1,5 @@
 require 'nn';
 require 'image';
-require 'itorch';
 require 'cunn';
 
 local basicsTutorialTest = {}
