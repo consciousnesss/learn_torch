@@ -1,6 +1,5 @@
 require 'nn';
 require 'image';
-require 'cunn';
 
 local basicsTutorialTest = {}
 local tester = torch.Tester()
