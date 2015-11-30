@@ -1,6 +1,6 @@
 require 'torch';
 require 'nn';
-require 'unsup';
+require 'unsup';  -- run 'luarocks install unsup'
 require 'xlua';
 require 'image';
 require 'optim';
